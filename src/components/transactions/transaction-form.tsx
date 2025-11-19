@@ -22,6 +22,8 @@ export function TransactionForm({ onSave }: { onSave: () => void }) {
     const [type, setType] = useState<TransactionType>("expense");
     const [category, setCategory] = useState<Category>("food");
     const [paymentMethod, setPaymentMethod] = useState<'debit' | 'credit'>('debit');
+    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [isRecurring, setIsRecurring] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -31,10 +33,12 @@ export function TransactionForm({ onSave }: { onSave: () => void }) {
             id: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36),
             amount: parseFloat(amount),
             description,
-            date: new Date().toISOString(),
+            date: new Date(date).toISOString(),
             type,
             category,
             paymentMethod: type === 'income' ? 'debit' : paymentMethod,
+            isRecurring,
+            recurrenceDay: isRecurring ? new Date(date).getDate() : undefined
         });
 
         setAmount("");
@@ -142,6 +146,30 @@ export function TransactionForm({ onSave }: { onSave: () => void }) {
                     )}
                 </div>
             )}
+
+            <div className="space-y-2">
+                <Label htmlFor="date">Data</Label>
+                <Input
+                    id="date"
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    required
+                />
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+                <input
+                    type="checkbox"
+                    id="recurring"
+                    checked={isRecurring}
+                    onChange={(e) => setIsRecurring(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <Label htmlFor="recurring" className="cursor-pointer">
+                    {type === 'income' ? 'Receita Recorrente (Mensal)' : 'Despesa Fixa (Mensal)'}
+                </Label>
+            </div>
 
             <Button type="submit" className="w-full mt-4">
                 Adicionar
