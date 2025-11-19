@@ -75,7 +75,7 @@ export default function AIPage() {
     };
 
     return (
-        <div className="flex flex-col h-[calc(10vh-120px)]">
+        <div className="flex flex-col h-[calc(100vh-120px)]">
             <header className="mb-4">
                 <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
                     <Sparkles className="w-6 h-6 text-purple-500" />
