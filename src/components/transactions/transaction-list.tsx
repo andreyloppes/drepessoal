@@ -1,6 +1,7 @@
+
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { Trash2, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Transaction } from "@/types";
 import { cn } from "@/lib/utils";
@@ -8,9 +9,10 @@ import { cn } from "@/lib/utils";
 interface TransactionListProps {
     transactions: Transaction[];
     onDelete: (id: string) => void;
+    onEdit?: (transaction: Transaction) => void;
 }
 
-export function TransactionList({ transactions, onDelete }: TransactionListProps) {
+export function TransactionList({ transactions, onDelete, onEdit }: TransactionListProps) {
     if (transactions.length === 0) {
         return (
             <div className="text-center py-10 text-muted-foreground">
@@ -66,14 +68,26 @@ export function TransactionList({ transactions, onDelete }: TransactionListProps
                         >
                             {transaction.type === "income" ? "+" : "-"} R$ {transaction.amount.toFixed(2)}
                         </span>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                            onClick={() => onDelete(transaction.id)}
-                        >
-                            <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <div className="flex gap-1">
+                            {onEdit && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                    onClick={() => onEdit(transaction)}
+                                >
+                                    <Edit2 className="w-4 h-4" />
+                                </Button>
+                            )}
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                onClick={() => onDelete(transaction.id)}
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </Button>
+                        </div>
                     </div>
                 </div>
             ))}

@@ -60,11 +60,19 @@ export default function Home() {
     calculateFinancials(data.transactions);
   };
 
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined);
+
+  const handleEdit = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setIsDialogOpen(true);
+  };
+
   const handleSave = async () => {
     const data = await StorageService.getData();
     setTransactions(data.transactions);
     calculateFinancials(data.transactions);
     setIsDialogOpen(false);
+    setEditingTransaction(undefined);
   };
 
   return (
@@ -128,22 +136,26 @@ export default function Home() {
         <TransactionList
           transactions={transactions.slice(0, 5)}
           onDelete={handleDelete}
+          onEdit={handleEdit}
         />
       </div>
 
       {/* Floating Action Button */}
       <div className="fixed bottom-24 right-4 z-50">
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) setEditingTransaction(undefined);
+        }}>
           <DialogTrigger asChild>
             <Button size="icon" className="h-14 w-14 rounded-full shadow-xl bg-emerald-500 hover:bg-emerald-600 text-white">
               <Plus className="w-8 h-8" />
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px] w-[95%] rounded-xl">
+          <DialogContent className="sm:max-w-[425px] w-[95%] rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-lg">
             <DialogHeader>
-              <DialogTitle>Nova Transação</DialogTitle>
+              <DialogTitle>{editingTransaction ? "Editar Transação" : "Nova Transação"}</DialogTitle>
             </DialogHeader>
-            <TransactionForm onSave={handleSave} />
+            <TransactionForm onSave={handleSave} initialData={editingTransaction} />
           </DialogContent>
         </Dialog>
       </div>

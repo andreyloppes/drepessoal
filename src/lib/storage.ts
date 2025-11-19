@@ -66,6 +66,24 @@ export const StorageService = {
         if (error) console.error('Error deleting transaction:', error);
     },
 
+    updateTransaction: async (transaction: Transaction) => {
+        const { error } = await supabase
+            .from('transactions')
+            .update({
+                amount: transaction.amount,
+                description: transaction.description,
+                date: transaction.date,
+                type: transaction.type,
+                category: transaction.category,
+                payment_method: transaction.paymentMethod,
+                is_recurring: transaction.isRecurring,
+                recurrence_day: transaction.recurrenceDay
+            })
+            .eq('id', transaction.id);
+
+        if (error) console.error('Error updating transaction:', error);
+    },
+
     updateEmergencyFund: async (fund: Partial<EmergencyFund>) => {
         // We assume there's only one row for now
         // First get the ID (or we could hardcode it if we knew it)

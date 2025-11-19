@@ -13,24 +13,24 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { StorageService } from "@/lib/storage";
-import { Category, TransactionType } from "@/types";
+import { Category, TransactionType, Transaction } from "@/types";
 import { cn } from "@/lib/utils";
 
-export function TransactionForm({ onSave }: { onSave: () => void }) {
-    const [amount, setAmount] = useState("");
-    const [description, setDescription] = useState("");
-    const [type, setType] = useState<TransactionType>("expense");
-    const [category, setCategory] = useState<Category>("food");
-    const [paymentMethod, setPaymentMethod] = useState<'debit' | 'credit'>('debit');
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-    const [isRecurring, setIsRecurring] = useState(false);
+export function TransactionForm({ onSave, initialData }: { onSave: () => void, initialData?: Transaction }) {
+    const [amount, setAmount] = useState(initialData?.amount.toString() || "");
+    const [description, setDescription] = useState(initialData?.description || "");
+    const [type, setType] = useState<TransactionType>(initialData?.type || "expense");
+    const [category, setCategory] = useState<Category>(initialData?.category || "food");
+    const [paymentMethod, setPaymentMethod] = useState<'debit' | 'credit'>(initialData?.paymentMethod || 'debit');
+    const [date, setDate] = useState(initialData?.date ? new Date(initialData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]);
+    const [isRecurring, setIsRecurring] = useState(initialData?.isRecurring || false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!amount || !description) return;
 
-        await StorageService.addTransaction({
-            id: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36),
+        const transactionData = {
+            id: initialData?.id || (typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36)),
             amount: parseFloat(amount),
             description,
             date: new Date(date).toISOString(),
@@ -39,7 +39,13 @@ export function TransactionForm({ onSave }: { onSave: () => void }) {
             paymentMethod: type === 'income' ? 'debit' : paymentMethod,
             isRecurring,
             recurrenceDay: isRecurring ? new Date(date).getDate() : undefined
-        });
+        };
+
+        if (initialData) {
+            await StorageService.updateTransaction(transactionData);
+        } else {
+            await StorageService.addTransaction(transactionData);
+        }
 
         setAmount("");
         setDescription("");
@@ -172,7 +178,7 @@ export function TransactionForm({ onSave }: { onSave: () => void }) {
             </div>
 
             <Button type="submit" className="w-full mt-4">
-                Adicionar
+                {initialData ? "Salvar Alterações" : "Adicionar"}
             </Button>
         </form>
     );

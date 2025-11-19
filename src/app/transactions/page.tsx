@@ -18,6 +18,7 @@ import {
 export default function TransactionsPage() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [isOpen, setIsOpen] = useState(false);
+    const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined);
 
     useEffect(() => {
         const loadData = async () => {
@@ -31,6 +32,7 @@ export default function TransactionsPage() {
         const data = await StorageService.getData();
         setTransactions(data.transactions);
         setIsOpen(false);
+        setEditingTransaction(undefined);
     };
 
     const handleDelete = async (id: string) => {
@@ -39,29 +41,35 @@ export default function TransactionsPage() {
         setTransactions(data.transactions);
     };
 
+    const handleEdit = (transaction: Transaction) => {
+        setEditingTransaction(transaction);
+        setIsOpen(true);
+    };
+
     return (
         <div className="space-y-6 pb-20">
             <header className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Transações</h1>
-                    <p className="text-muted-foreground">Gerencie suas entradas e saídas</p>
+                    <p className="text-muted-foreground">Histórico completo</p>
                 </div>
-                <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                <Dialog open={isOpen} onOpenChange={(open) => {
+                    setIsOpen(open);
+                    if (!open) setEditingTransaction(undefined);
+                }}>
                     <DialogTrigger asChild>
-                        <Button size="icon" className="rounded-full h-10 w-10 shadow-lg bg-primary text-primary-foreground hover:bg-primary/90">
-                            <Plus className="w-6 h-6" />
-                        </Button>
+                        <Button>Nova Transação</Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px] w-[95%] rounded-xl">
+                    <DialogContent className="sm:max-w-[425px] w-[95%] rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-lg">
                         <DialogHeader>
-                            <DialogTitle>Nova Transação</DialogTitle>
+                            <DialogTitle>{editingTransaction ? "Editar Transação" : "Nova Transação"}</DialogTitle>
                         </DialogHeader>
-                        <TransactionForm onSave={handleSave} />
+                        <TransactionForm onSave={handleSave} initialData={editingTransaction} />
                     </DialogContent>
                 </Dialog>
             </header>
 
-            <TransactionList transactions={transactions} onDelete={handleDelete} />
+            <TransactionList transactions={transactions} onDelete={handleDelete} onEdit={handleEdit} />
         </div>
     );
 }
