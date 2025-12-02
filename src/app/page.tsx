@@ -52,7 +52,8 @@ export default function Dashboard() {
       setTransactions(data.transactions);
       calculateFinancials(data.transactions);
 
-      const totalBalance = await StorageService.getTotalBalanceUntil(currentMonth);
+      // Use REAL current balance (up to now)
+      const totalBalance = await StorageService.getCurrentBalance();
       setBalance(totalBalance);
     };
     loadData();
@@ -65,7 +66,7 @@ export default function Dashboard() {
     setTransactions(data.transactions);
     calculateFinancials(data.transactions);
 
-    const totalBalance = await StorageService.getTotalBalanceUntil(currentMonth);
+    const totalBalance = await StorageService.getCurrentBalance();
     setBalance(totalBalance);
   };
 
@@ -81,7 +82,7 @@ export default function Dashboard() {
     setTransactions(data.transactions);
     calculateFinancials(data.transactions);
 
-    const totalBalance = await StorageService.getTotalBalanceUntil(currentMonth);
+    const totalBalance = await StorageService.getCurrentBalance();
     setBalance(totalBalance);
 
     setIsDialogOpen(false);

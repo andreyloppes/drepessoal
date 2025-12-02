@@ -28,8 +28,8 @@ export default function DFCPage() {
         const data = await StorageService.getData(currentMonth);
         setTransactions(data.transactions);
 
-        // We show the TOTAL balance until today for adjustment purposes
-        const currentBalance = await StorageService.getTotalBalanceUntil(new Date());
+        // Use REAL current balance (up to now) for adjustment
+        const currentBalance = await StorageService.getCurrentBalance();
         setBalance(currentBalance);
 
         processChartData(data.transactions);

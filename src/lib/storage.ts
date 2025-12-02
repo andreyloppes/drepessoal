@@ -61,6 +61,21 @@ export const StorageService = {
         }, 0);
     },
 
+    getCurrentBalance: async () => {
+        const now = new Date().toISOString();
+
+        const { data } = await supabase
+            .from('transactions')
+            .select('amount, type')
+            .lte('date', now);
+
+        if (!data) return 0;
+
+        return data.reduce((acc, t) => {
+            return t.type === 'income' ? acc + Number(t.amount) : acc - Number(t.amount);
+        }, 0);
+    },
+
     addTransaction: async (transaction: Transaction) => {
         const { data, error } = await supabase
             .from('transactions')
