@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -5,13 +6,16 @@ import { StorageService } from "@/lib/storage";
 import { Transaction } from "@/types";
 import { ArrowUpCircle, ArrowDownCircle, Wallet, CreditCard, Plus } from "lucide-react";
 import { TransactionList } from "@/components/transactions/transaction-list";
+import { TransactionForm } from "@/components/transactions/transaction-form";
+import { useMonth } from "@/contexts/MonthContext";
+import { MonthSelector } from "@/components/ui/month-selector";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getInvoiceDate } from "@/lib/finance-utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { TransactionForm } from "@/components/transactions/transaction-form";
 
-export default function Home() {
+export default function Dashboard() {
+  const { currentMonth } = useMonth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [balance, setBalance] = useState(0);
   const [income, setIncome] = useState(0);
@@ -19,28 +23,27 @@ export default function Home() {
   const [invoiceAmount, setInvoiceAmount] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const calculateFinancials = (data: Transaction[]) => {
-    const totalIncome = data
+  const calculateFinancials = (txs: Transaction[]) => {
+    const totalIncome = txs
       .filter((t) => t.type === "income")
       .reduce((acc, t) => acc + t.amount, 0);
 
-    const debitExpenses = data
-      .filter((t) => t.type === "expense" && t.paymentMethod === "debit")
+    const totalExpense = txs
+      .filter((t) => t.type === "expense" && t.paymentMethod === 'debit')
       .reduce((acc, t) => acc + t.amount, 0);
 
-    const creditExpenses = data
-      .filter((t) => t.type === "expense" && t.paymentMethod === "credit")
+    // Calculate credit card invoice for this month
+    // We filter expenses that are 'credit' AND fall into this month's invoice
+    // Simplified logic: if transaction date is in this month, it counts for this month's invoice view
+    // (You might want to refine this based on closing date later)
+    const totalInvoice = txs
+      .filter((t) => t.type === "expense" && t.paymentMethod === 'credit')
       .reduce((acc, t) => acc + t.amount, 0);
-
-    // Calculate current open invoice (approximate for now, showing total credit debt)
-    // In a real app we would filter by invoice date. 
-    // For now let's show "Total Credit Card Bill" as the sum of all unpaid credit transactions.
-    // Assuming they are unpaid if they exist in the list (we'd need a "paid" status later).
-    setInvoiceAmount(creditExpenses);
 
     setIncome(totalIncome);
-    setExpense(debitExpenses + creditExpenses); // Total expenses tracked
-    setBalance(totalIncome - debitExpenses); // Balance only affected by debit
+    setExpense(totalExpense);
+    setInvoiceAmount(totalInvoice);
+    // Balance is set by the useEffect now, based on accumulated history
   };
 
   useEffect(() => {
@@ -81,6 +84,8 @@ export default function Home() {
         <h1 className="text-2xl font-bold tracking-tight">Olá, Andrey 👋</h1>
         <p className="text-muted-foreground">Visão geral das suas finanças</p>
       </header>
+
+      <MonthSelector />
 
       <div className="grid gap-4">
         <div className="p-6 rounded-xl bg-gradient-to-br from-blue-900/50 to-slate-900/50 border border-blue-800/30 shadow-lg">

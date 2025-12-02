@@ -15,21 +15,25 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 
+import { useMonth } from "@/contexts/MonthContext";
+import { MonthSelector } from "@/components/ui/month-selector";
+
 export default function TransactionsPage() {
+    const { currentMonth } = useMonth();
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined);
 
     useEffect(() => {
         const loadData = async () => {
-            const data = await StorageService.getData();
+            const data = await StorageService.getData(currentMonth);
             setTransactions(data.transactions);
         };
         loadData();
-    }, []);
+    }, [currentMonth]);
 
     const handleSave = async () => {
-        const data = await StorageService.getData();
+        const data = await StorageService.getData(currentMonth);
         setTransactions(data.transactions);
         setIsOpen(false);
         setEditingTransaction(undefined);
@@ -37,7 +41,7 @@ export default function TransactionsPage() {
 
     const handleDelete = async (id: string) => {
         await StorageService.deleteTransaction(id);
-        const data = await StorageService.getData();
+        const data = await StorageService.getData(currentMonth);
         setTransactions(data.transactions);
     };
 
@@ -68,6 +72,8 @@ export default function TransactionsPage() {
                     </DialogContent>
                 </Dialog>
             </header>
+
+            <MonthSelector />
 
             <TransactionList transactions={transactions} onDelete={handleDelete} onEdit={handleEdit} />
         </div>

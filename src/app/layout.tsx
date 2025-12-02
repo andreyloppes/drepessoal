@@ -20,6 +20,8 @@ export const viewport: Viewport = {
   themeColor: "#0a0a0a",
 };
 
+import { MonthProvider } from "@/contexts/MonthContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,11 +29,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className="dark">
-      <body className={cn(inter.className, "antialiased bg-background text-foreground pb-20")}>
-        <main className="min-h-screen px-4 py-6">
+      <body className={`${inter.className} antialiased bg-background text-foreground pb-16`}>
+        <MonthProvider>
           {children}
-        </main>
-        <BottomNav />
+          <BottomNav />
+        </MonthProvider>
       </body>
     </html>
   );

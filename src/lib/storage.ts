@@ -11,11 +11,19 @@ const DEFAULT_DATA: AppData = {
 };
 
 export const StorageService = {
-    getData: async (): Promise<AppData> => {
-        const { data: transactions } = await supabase
+    getData: async (month?: Date): Promise<AppData> => {
+        let query = supabase
             .from('transactions')
             .select('*')
             .order('date', { ascending: false });
+
+        if (month) {
+            const start = new Date(month.getFullYear(), month.getMonth(), 1).toISOString();
+            const end = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59).toISOString();
+            query = query.gte('date', start).lte('date', end);
+        }
+
+        const { data: transactions } = await query;
 
         const { data: fund } = await supabase
             .from('emergency_fund')
@@ -35,6 +43,21 @@ export const StorageService = {
                 monthlyContribution: fund.monthly_contribution
             } : DEFAULT_DATA.emergencyFund
         };
+    },
+
+    getTotalBalanceUntil: async (date: Date) => {
+        const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59).toISOString();
+
+        const { data } = await supabase
+            .from('transactions')
+            .select('amount, type')
+            .lte('date', end);
+
+        if (!data) return 0;
+
+        return data.reduce((acc, t) => {
+            return t.type === 'income' ? acc + Number(t.amount) : acc - Number(t.amount);
+        }, 0);
     },
 
     addTransaction: async (transaction: Transaction) => {
