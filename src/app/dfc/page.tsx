@@ -74,7 +74,7 @@ export default function DFCPage() {
             const amount = Math.abs(diff);
 
             await StorageService.addTransaction({
-                id: Math.random().toString(36).substring(2),
+                id: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36),
                 description: "Ajuste de Saldo (Manual)",
                 amount,
                 type,
