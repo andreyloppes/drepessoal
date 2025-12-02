@@ -18,8 +18,9 @@ export const StorageService = {
             .order('date', { ascending: false });
 
         if (month) {
-            const start = new Date(month.getFullYear(), month.getMonth(), 1).toISOString();
-            const end = new Date(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59).toISOString();
+            // Create UTC dates to match how transactions are saved (YYYY-MM-DDT00:00:00.000Z)
+            const start = new Date(Date.UTC(month.getFullYear(), month.getMonth(), 1)).toISOString();
+            const end = new Date(Date.UTC(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59, 999)).toISOString();
             query = query.gte('date', start).lte('date', end);
         }
 
@@ -46,7 +47,7 @@ export const StorageService = {
     },
 
     getTotalBalanceUntil: async (date: Date) => {
-        const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59).toISOString();
+        const end = new Date(Date.UTC(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999)).toISOString();
 
         const { data } = await supabase
             .from('transactions')
