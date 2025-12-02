@@ -54,30 +54,47 @@ export default function DFCPage() {
         setChartData(data);
     };
 
+    const [isLoading, setIsLoading] = useState(false);
+
     const handleAdjustBalance = async () => {
         if (!realBalanceInput) return;
-        const realBalance = parseFloat(realBalanceInput);
-        const diff = realBalance - balance;
+        setIsLoading(true);
 
-        if (diff === 0) return;
+        try {
+            const realBalance = parseFloat(realBalanceInput.replace(',', '.')); // Ensure dot separator
+            const diff = realBalance - balance;
 
-        const type = diff > 0 ? 'income' : 'expense';
-        const amount = Math.abs(diff);
+            if (Math.abs(diff) < 0.01) {
+                setIsLoading(false);
+                setIsDialogOpen(false);
+                return;
+            }
 
-        await StorageService.addTransaction({
-            id: Math.random().toString(36).substring(2),
-            description: "Ajuste de Saldo (Manual)",
-            amount,
-            type,
-            category: 'other',
-            date: new Date().toISOString(),
-            paymentMethod: 'debit',
-            isRecurring: false
-        });
+            const type = diff > 0 ? 'income' : 'expense';
+            const amount = Math.abs(diff);
 
-        setIsDialogOpen(false);
-        setRealBalanceInput("");
-        loadData();
+            await StorageService.addTransaction({
+                id: Math.random().toString(36).substring(2),
+                description: "Ajuste de Saldo (Manual)",
+                amount,
+                type,
+                category: 'other',
+                date: new Date().toISOString(),
+                paymentMethod: 'debit',
+                isRecurring: false
+            });
+
+            // Small delay to ensure DB propagation
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            await loadData();
+            setIsDialogOpen(false);
+            setRealBalanceInput("");
+        } catch (error) {
+            console.error("Error adjusting balance:", error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -113,7 +130,9 @@ export default function DFCPage() {
                                         Isso criará uma transação de ajuste para igualar o saldo do sistema.
                                     </p>
                                 </div>
-                                <Button onClick={handleAdjustBalance} className="w-full">Confirmar Ajuste</Button>
+                                <Button onClick={handleAdjustBalance} className="w-full" disabled={isLoading}>
+                                    {isLoading ? "Ajustando..." : "Confirmar Ajuste"}
+                                </Button>
                             </div>
                         </DialogContent>
                     </Dialog>
