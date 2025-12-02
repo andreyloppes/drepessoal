@@ -48,19 +48,25 @@ export default function Dashboard() {
 
   useEffect(() => {
     const loadData = async () => {
-      const data = await StorageService.getData();
+      const data = await StorageService.getData(currentMonth);
       setTransactions(data.transactions);
       calculateFinancials(data.transactions);
+
+      const totalBalance = await StorageService.getTotalBalanceUntil(currentMonth);
+      setBalance(totalBalance);
     };
     loadData();
-  }, []);
+  }, [currentMonth]);
 
   const handleDelete = async (id: string) => {
     await StorageService.deleteTransaction(id);
     // Reload data to ensure sync
-    const data = await StorageService.getData();
+    const data = await StorageService.getData(currentMonth);
     setTransactions(data.transactions);
     calculateFinancials(data.transactions);
+
+    const totalBalance = await StorageService.getTotalBalanceUntil(currentMonth);
+    setBalance(totalBalance);
   };
 
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined);
@@ -71,9 +77,13 @@ export default function Dashboard() {
   };
 
   const handleSave = async () => {
-    const data = await StorageService.getData();
+    const data = await StorageService.getData(currentMonth);
     setTransactions(data.transactions);
     calculateFinancials(data.transactions);
+
+    const totalBalance = await StorageService.getTotalBalanceUntil(currentMonth);
+    setBalance(totalBalance);
+
     setIsDialogOpen(false);
     setEditingTransaction(undefined);
   };
