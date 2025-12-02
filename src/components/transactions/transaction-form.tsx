@@ -25,31 +25,32 @@ export function TransactionForm({ onSave, initialData }: { onSave: () => void, i
     const [date, setDate] = useState(initialData?.date ? new Date(initialData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]);
     const [isRecurring, setIsRecurring] = useState(initialData?.isRecurring || false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!amount || !description) return;
 
-        const transactionData = {
+        // Create date object and adjust for timezone offset to ensure it saves as the selected calendar date
+        const selectedDate = new Date(date);
+        const userTimezoneOffset = selectedDate.getTimezoneOffset() * 60000;
+        const adjustedDate = new Date(selectedDate.getTime() + userTimezoneOffset);
+
+        const newTransaction: Transaction = {
             id: initialData?.id || (typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36)),
             amount: parseFloat(amount),
             description,
-            date: new Date(date).toISOString(),
+            date: adjustedDate.toISOString(), // Save as UTC midnight of the selected day
             type,
-            category,
-            paymentMethod: type === 'income' ? 'debit' : paymentMethod,
+            category: category as Category,
+            paymentMethod: type === 'expense' ? paymentMethod : undefined,
             isRecurring,
-            recurrenceDay: isRecurring ? new Date(date).getDate() : undefined
+            recurrenceDay: isRecurring ? adjustedDate.getDate() : undefined
         };
 
         if (initialData) {
-            await StorageService.updateTransaction(transactionData);
+            StorageService.updateTransaction(newTransaction).then(onSave);
         } else {
-            await StorageService.addTransaction(transactionData);
+            StorageService.addTransaction(newTransaction).then(onSave);
         }
-
-        setAmount("");
-        setDescription("");
-        onSave();
     };
 
     return (
