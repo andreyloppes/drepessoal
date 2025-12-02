@@ -42,8 +42,12 @@ export default function DFCPage() {
 
         const data = days.map(day => {
             const dayTxs = txs.filter(t => isSameDay(new Date(t.date), day));
-            const income = dayTxs.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
-            const expense = dayTxs.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+            const income = dayTxs
+                .filter(t => t.type === 'income' && t.description !== "Ajuste de Saldo (Manual)")
+                .reduce((acc, t) => acc + t.amount, 0);
+            const expense = dayTxs
+                .filter(t => t.type === 'expense' && t.description !== "Ajuste de Saldo (Manual)")
+                .reduce((acc, t) => acc + t.amount, 0);
             return {
                 day: getDate(day),
                 income,

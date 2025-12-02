@@ -25,11 +25,11 @@ export default function Dashboard() {
 
   const calculateFinancials = (txs: Transaction[]) => {
     const totalIncome = txs
-      .filter((t) => t.type === "income")
+      .filter((t) => t.type === "income" && t.description !== "Ajuste de Saldo (Manual)")
       .reduce((acc, t) => acc + t.amount, 0);
 
     const totalExpense = txs
-      .filter((t) => t.type === "expense" && t.paymentMethod === 'debit')
+      .filter((t) => t.type === "expense" && t.paymentMethod === 'debit' && t.description !== "Ajuste de Saldo (Manual)")
       .reduce((acc, t) => acc + t.amount, 0);
 
     // Calculate credit card invoice for this month
